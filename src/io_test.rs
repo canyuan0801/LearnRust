@@ -1,4 +1,6 @@
 use std::{fs, process};
+use std::error::Error;
+
 
 pub fn read_file() {
     let args: Vec<String> = std::env::args().collect();
@@ -14,8 +16,21 @@ pub fn read_file() {
     println!("Searching for {}", config.query);
     println!("In file {}", config.filename);
 
-    let contents = fs::read_to_string(config.filename).expect("Something went  wrong reading the file");
+    if let Err(e) = run(config) {
+        println!("Application error:{}", e);
+        process::exit(1);
+    }
+}
+
+/**
+返回的ok中有空元组，是为了产生函数副作用，而不是为了返回任何有用的值
+*/
+fn run(config: Config) -> Result<(), Box<dyn Error>>{
+    // ?可以将错误值返回给函数的调用者来进行处理
+    let contents = fs::read_to_string(config.filename)?;
     println!("With test:\n{}", contents);
+
+    Ok(())
 }
 
 struct Config {
