@@ -5,6 +5,7 @@ use crate::io_test::read_file;
 
 mod functional;
 mod io_test;
+mod lib;
 
 fn main() {
     read_file();

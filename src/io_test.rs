@@ -13,9 +13,10 @@ pub fn read_file() {
         process::exit(1)
     });
 
-    println!("Searching for {}", config.query);
-    println!("In file {}", config.filename);
+    println!("Searching for: {}", config.query);
+    println!("In file: {}", config.filename);
 
+    // 这里使用if let是因为返回的是()，没有必要调用unwrap_or_else把这个必定是()的值取出来
     if let Err(e) = run(config) {
         println!("Application error:{}", e);
         process::exit(1);
@@ -28,9 +29,27 @@ pub fn read_file() {
 fn run(config: Config) -> Result<(), Box<dyn Error>>{
     // ?可以将错误值返回给函数的调用者来进行处理
     let contents = fs::read_to_string(config.filename)?;
-    println!("With test:\n{}", contents);
+
+    for line in search(&config.query, &contents) {
+        println!("{}", line);
+    }
 
     Ok(())
+}
+
+/**
+'a是一个显式生命周期
+ */
+pub fn search<'a> (query:&str, contents:&'a str) -> Vec<&'a str> {
+    let mut results = Vec::new();
+    for line in contents.lines() {
+        // do something with line
+        if line.contains(query) {
+            // 使用line执行某些操作
+            results.push(line)
+        }
+    }
+    results
 }
 
 struct Config {
@@ -41,6 +60,7 @@ struct Config {
 impl Config {
     /**
         &'static是字符串字面量的类型, see in chap 10
+    运行失败会返回&'static 的str
     */
     fn new(args: &[String]) -> Result<Config, &'static str> {
         if args.len() < 3 {
